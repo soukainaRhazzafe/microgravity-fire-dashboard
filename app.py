@@ -16,7 +16,7 @@ st.set_page_config(
 def load_recommender():
 
     return PSIInvestigationRecommender(
-        "schema.csv"
+        "investigations.csv"
     )
 
 

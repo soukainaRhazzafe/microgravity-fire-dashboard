@@ -17,9 +17,15 @@ class PSIInvestigationRecommender:
         self.df["search_text"] = (
             self.df["title"].fillna("")
             + " "
+            + self.df["approach"].fillna("")
+            + " "
             + self.df["objective"].fillna("")
             + " "
-            + self.df["keywords"].fillna("")
+            + self.df["hypothesis"].fillna("")
+            + " "
+            + self.df["research_impacts"].fillna("")
+            + " "
+            + self.df["research_area"].fillna("")
         )
 
         self.embeddings = self.model.encode(
