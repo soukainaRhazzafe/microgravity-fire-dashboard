@@ -1,135 +1,127 @@
 import streamlit as st
 
+from recommender import (
+    PSIInvestigationRecommender
+)
+
+
 st.set_page_config(
-    page_title="Microgravity Dashboard",
-    layout="wide",
+    page_title="NASA PSI Research Assistant",
+    page_icon="🔥",
+    layout="wide"
 )
 
-INVESTIGATIONS = [
-    {
-        "name": "BASS",
-        "full_name": "Burning and Suppression of Solids",
-        "categories": ["Prevention", "Suppression"],
-        "fuel_type": "Solid materials",
-        "summary": (
-            "Investigates solid-material burning and suppression in "
-            "microgravity, with relevance to spacecraft materials "
-            "and fire safety."
-        ),
-        "source_url": (
-            "https://www.nasa.gov/glenn/"
-            "glenn-expertise-space-exploration/"
-            "physical-sciences-program/combustion-science/"
-        ),
-    },
-    {
-        "name": "SAME",
-        "full_name": "Smoke and Aerosol Measurement Experiment",
-        "categories": ["Detection"],
-        "fuel_type": "Smoke and aerosols from material samples",
-        "summary": (
-            "Studies smoke and aerosol measurements in microgravity "
-            "to support understanding of spacecraft fire detection."
-        ),
-        "source_url": (
-            "https://www.nasa.gov/glenn/"
-            "glenn-expertise-space-exploration/"
-            "physical-sciences-program/combustion-science/"
-        ),
-    },
-    {
-        "name": "FLEX",
-        "full_name": "Flame Extinguishment Experiment",
-        "categories": ["Suppression"],
-        "fuel_type": "Liquid-fuel droplets",
-        "summary": (
-            "Studies droplet combustion and flame extinction in "
-            "microgravity, including suppression through atmospheric "
-            "dilution with carbon dioxide and helium."
-        ),
-        "source_url": (
-            "https://www.nasa.gov/glenn/"
-            "glenn-expertise-space-exploration/"
-            "physical-sciences-program/combustion-science/"
-        ),
-    },
-]
 
-st.title("Microgravity Fire Dashboard")
-st.write(
-    "Explore NASA combustion investigations by fire-safety research area."
-)
+@st.cache_resource
+def load_recommender():
 
-st.caption(
-    "Prototype catalog: manually curated from the supplied challenge brief. "
-    "These are introductory summaries, not experimental findings or "
-    "validated safety recommendations."
-)
-
-st.sidebar.header("Explore investigations")
-
-selected_category = st.sidebar.selectbox(
-    "Research area",
-    ["All", "Prevention", "Detection", "Suppression"],
-)
-
-search_text = st.sidebar.text_input(
-    "Search investigations",
-    placeholder="For example: droplets",
-)
-
-filtered_investigations = []
-
-for investigation in INVESTIGATIONS:
-    matches_category = (
-        selected_category == "All"
-        or selected_category in investigation["categories"]
+    return PSIInvestigationRecommender(
+        "schema.csv"
     )
 
-    searchable_text = " ".join(
-        [
-            investigation["name"],
-            investigation["full_name"],
-            investigation["fuel_type"],
-            investigation["summary"],
-        ]
-    ).lower()
 
-    matches_search = search_text.strip().lower() in searchable_text
+recommender = load_recommender()
 
-    if matches_category and matches_search:
-        filtered_investigations.append(investigation)
 
-st.subheader("Investigation catalog")
-st.write(f"Showing {len(filtered_investigations)} of {len(INVESTIGATIONS)} investigations.")
+st.title(
+    "🔥 NASA PSI Fire Safety Research Assistant"
+)
 
-if not filtered_investigations:
-    st.info("No matching investigations. Try another category or search term.")
+st.markdown(
+    """
+Find the NASA PSI combustion investigations
+most relevant to your research question.
+    """
+)
 
-for investigation in filtered_investigations:
-    with st.container(border=True):
+
+query = st.text_area(
+    "Research Goal",
+    placeholder="""
+Examples:
+
+Predict fire spread in a lunar habitat.
+
+Study smoke detector performance
+inside a pressurized rover.
+
+Investigate fire suppression
+using carbon dioxide.
+"""
+)
+
+
+top_k = st.slider(
+    "Number of Results",
+    min_value=3,
+    max_value=10,
+    value=5
+)
+
+
+if st.button("Recommend"):
+
+    if not query.strip():
+
+        st.warning(
+            "Please enter a research goal."
+        )
+
+    else:
+
+        results = recommender.recommend(
+            query,
+            top_k
+        )
+
         st.subheader(
-            f"{investigation['name']} — {investigation['full_name']}"
+            "Recommended Investigations"
         )
-        st.write(investigation["summary"])
 
-        st.write(
-            "Research areas: "
-            + ", ".join(investigation["categories"])
+        for _, row in results.iterrows():
+
+            with st.expander(
+                f"{row['title']}  |  Score: {row['score']:.3f}",
+                expanded=True
+            ):
+
+                st.write(
+                    f"**Category:** {row['category']}"
+                )
+
+                st.write(
+                    f"**Objective:** {row['objective']}"
+                )
+
+                if "keywords" in results.columns:
+
+                    st.write(
+                        f"**Keywords:** {row['keywords']}"
+                    )
+
+        st.subheader(
+            "Results Table"
         )
-        st.write(f"Fuel / material context: {investigation['fuel_type']}")
 
-        with st.expander("Sources and limitations"):
-            st.write(
-                "Summary provenance: manually curated from the "
-                "NASA Space Apps challenge brief supplied for this project."
-            )
-            st.link_button(
-                "NASA combustion research overview",
-                investigation["source_url"],
-            )
-            st.write(
-                "This link provides background information, not a "
-                "specific experimental run or measurement. Run-level "
-                "conditions and PSI dataset links have not yet been added."
-            )
+        st.dataframe(
+            results[
+                [
+                    "title",
+                    "category",
+                    "objective",
+                    "score"
+                ]
+            ],
+            use_container_width=True,
+        )
+
+        csv = results.to_csv(
+            index=False
+        )
+
+        st.download_button(
+            label="Download Results",
+            data=csv,
+            file_name="recommended_investigations.csv",
+            mime="text/csv",
+        )
