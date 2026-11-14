@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Microgravity Fire Dashboard",
+    page_title="Microgravity Dashboard",
     layout="wide",
 )
 
@@ -133,4 +133,3 @@ for investigation in filtered_investigations:
                 "specific experimental run or measurement. Run-level "
                 "conditions and PSI dataset links have not yet been added."
             )
-            
