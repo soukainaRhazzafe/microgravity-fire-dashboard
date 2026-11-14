@@ -83,21 +83,35 @@ if st.button("Recommend"):
             with st.expander(
                 f"{row['title']}  |  Score: {row['score']:.3f}",
                 expanded=True
-            ):
+                ):
 
                 st.write(
-                    f"**Category:** {row['category']}"
+                    f"**Research Area:** {row['research_area']}"
+                )
+
+                st.write(
+                    f"**Hardware:** {row['hardware']}"
                 )
 
                 st.write(
                     f"**Objective:** {row['objective']}"
                 )
 
-                if "keywords" in results.columns:
+                st.write(
+                    f"**Approach:** {row['approach']}"
+                )
 
-                    st.write(
-                        f"**Keywords:** {row['keywords']}"
-                    )
+                st.write(
+                    f"**Hypothesis:** {row['hypothesis']}"
+                )
+
+                st.write(
+                    f"**Research Impacts:** {row['research_impacts']}"
+                )
+
+                st.markdown(
+                    f"{row['source_url']}"
+                )
 
         st.subheader(
             "Results Table"
@@ -107,7 +121,7 @@ if st.button("Recommend"):
             results[
                 [
                     "title",
-                    "category",
+                    "research_area",
                     "objective",
                     "score"
                 ]
