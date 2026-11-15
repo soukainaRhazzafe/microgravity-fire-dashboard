@@ -9,7 +9,10 @@ from urllib.parse import urlparse
 import pandas as pd
 import streamlit as st
 from recommender import PSIInvestigationRecommender
-
+from starfire_visuals import (
+    apply_visual_polish,
+    render_visual_shortlist,
+)
 st.set_page_config(page_title="StarFire | Research discovery", layout="wide", initial_sidebar_state="collapsed")
 MODEL_ID = "HuggingFaceTB/SmolLM2-1.7B-Instruct"
 PROMPT_VERSION = 7
@@ -83,7 +86,7 @@ a:focus-visible,button:focus-visible,textarea:focus-visible {outline: 3px solid 
 }
 </style>
 """, unsafe_allow_html=True)
-
+apply_visual_polish()
 
 def clean(value):
     if value is None:
@@ -337,7 +340,7 @@ if results is not None:
         st.markdown(f'<div class="sf-query">{safe_text(active_query)}</div>', unsafe_allow_html=True)
         st.caption(f"{len(results)} ranked investigations · AI-generated notes; check claims against the sources.")
         st.markdown("#### Scan the shortlist")
-        render_shortlist_map(results)
+        render_visual_shortlist(results)
         st.markdown('<div class="sf-section-hint">Choose an investigation above to jump to its note. Start with the connection, then inspect the evidence and next step.</div>', unsafe_allow_html=True)
         export_rows = []
         total = len(results)
