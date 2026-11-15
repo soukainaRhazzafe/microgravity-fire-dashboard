@@ -7,7 +7,8 @@ import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin
-
+import asyncio
+from pathlib import Path
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
@@ -288,6 +289,4 @@ async def main_async():
 
 
 if __name__ == "__main__":
-    import nest_asyncio
-    nest_asyncio.apply()
     asyncio.run(main_async())

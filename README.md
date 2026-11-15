@@ -1,83 +1,28 @@
 # StarFire
 
-### Explore NASA‚Äôs microgravity fire-safety research through your own questions.
+Explore NASA's microgravity fire-safety research through your own questions.
 
-StarFire is a working research-discovery prototype that helps users find potentially relevant NASA Physical Sciences Informatics (PSI) investigations, understand their objectives, and decide what evidence to inspect next.
+I built StarFire to make it easier to find relevant investigations and figure out what to look at next. Ask about flame spread, material flammability, smoke detection, or fire suppression. The app returns a ranked shortlist with original metadata, source links, and AI-generated notes focused on your question.
 
-Ask about material flammability, smoke detection, or fire suppression. StarFire returns a ranked shortlist with question-specific AI notes, original investigation metadata, and source links.
+## What it does
 
-> Research discovery‚Äînot a safety verdict. Ranked matches and generated interpretations are not verified scientific conclusions or confirmation of dataset suitability.
+- Finds potentially relevant investigations from a local NASA PSI catalog.
+- Explains the connection to your question, useful evidence, and possible interpretations.
+- Suggests a concrete next research step for each investigation.
+- Keeps original metadata and source links available for checking.
+- Lets you compare investigations and export a CSV shortlist or TXT research brief.
+- Generates notes locally with SmolLM2, using Transformers and PyTorch.
 
-## Why StarFire?
+## Run it locally
 
-Finding an investigation is only the first step. Researchers also need to understand why it may relate to their question, distinguish intended work from reported findings, and identify a useful next action.
-
-StarFire brings those steps into one interface while keeping the underlying metadata accessible for checking.
-
-## Features
-
-- **Natural-language search:** Describe a research question and retrieve ranked investigation candidates.
-- **Question-specific research notes:** Automatically generate a concise note for each retrieved investigation:
-  - **Connection:** How the investigation relates to the question, including indirect or partial matches.
-  - **Useful evidence:** Relevant documented methods, conditions, hypotheses, or reported findings.
-  - **Interpretation:** A cautious explanation of what the evidence could mean for the research question.
-  - **Next step:** One concrete research action tied to the investigation and question.
-- **Investigation evidence:** Inspect original metadata fields and follow available source links.
-- **Shortlist comparison:** Compare investigation titles, research areas, hardware, and source links where available.
-- **Research exports:** Download the shortlist as CSV or a readable TXT research brief.
-- **Local text generation:** Use a downloaded language model without a hosted inference API for the research notes.
-- **Session reuse:** Reuse generated notes for the same question, metadata, model, and prompt version within the current app session.
-
-## Example questions
-
-- How does airflow affect flame spread over solid materials in microgravity?
-- Which investigations could help me study smoke detection?
-- What research examines oxygen concentration and material flammability?
-- Which investigations are relevant to fire suppression in microgravity?
-
-These are example searches, not guarantees that the catalog contains evidence sufficient to answer them.
-
-## How it works
-
-1. **Ask:** Enter a research question and choose the number of investigations to retrieve.
-2. **Retrieve:** The project‚Äôs `PSIInvestigationRecommender` ranks investigations from `investigations.csv`.
-3. **Generate:** A local language model receives the question and selected investigation metadata excerpts.
-4. **Inspect:** Read the generated note and open the original metadata and source link to check its claims.
-5. **Export:** Save a shortlist or research brief for follow-up work.
-
-The AI prompt instructs the model to use only supplied metadata, distinguish hypotheses and objectives from findings, and avoid unsupported claims. These instructions reduce neither the need for source checking nor the possibility of errors.
-
-## Technology
-
-| Component | Implementation |
-| --- | --- |
-| Interface | Streamlit |
-| Data handling and CSV export | pandas |
-| Investigation ranking | Project module: `PSIInvestigationRecommender` |
-| Local inference | Hugging Face Transformers and PyTorch |
-| Language model | `HuggingFaceTB/SmolLM2-1.7B-Instruct` |
-| Inference device | Apple MPS when available; otherwise CPU |
-| Investigation catalog | Local `investigations.csv` |
-
-## Run locally
-
-### Prerequisites
-
-- Python and a virtual environment suitable for the project‚Äôs dependencies.
-- The repository‚Äôs investigation catalog and recommender module.
-- Sufficient disk space and memory for the local language model.
-- Internet access for initial dependency and model downloads.
-
-### 1. Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/soukainaRhazzafe/microgravity-fire-dashboard.git
 cd microgravity-fire-dashboard
 ```
 
-### 2. Create and activate a virtual environment
-
-On macOS or Linux:
+Create and activate a virtual environment on macOS or Linux:
 
 ```bash
 python3 -m venv .venv
@@ -91,86 +36,60 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
-
-If the repository includes a maintained `requirements.txt`:
+Install dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-The interface and local generator use `streamlit`, `pandas`, `torch`, `transformers`, and `safetensors`. The recommender may require additional packages; its imports and the project dependency file determine the complete environment.
-
-### 4. Download the local model
-
-The application expects the tokenizer and model files under:
-
-```text
-models/smollm2/
-```
-
-If using the project‚Äôs model-download script, run:
+Download the local model:
 
 ```bash
 python download_model.py
 ```
 
-The local generator loads the files from that directory with `local_files_only=True`; it does not download missing model files automatically during generation.
+The app expects the model and tokenizer files in `models/smollm2/` and the investigation catalog at `investigations.csv`, next to `app.py`.
 
-### 5. Start the app
+Start the app:
 
 ```bash
 streamlit run app.py
 ```
 
-Open the local address printed in the terminal. Press `Ctrl+C` in the terminal to stop the app.
+Open the local address shown in the terminal. Press `Ctrl+C` to stop it.
 
-## Application files
+Start with three investigations per search. Notes are generated one at a time and reused within the session when the question and metadata have not changed.
 
-The app expects these files or directories relative to `app.py`:
+## Main files
 
-```text
-app.py                    # Streamlit interface and local text-generation workflow
-recommender.py            # Defines PSIInvestigationRecommender
-investigations.csv        # Investigation catalog
-models/
-‚îî‚îÄ‚îÄ smollm2/               # Downloaded model and tokenizer files
+- `app.py`: interface, research notes, and exports.
+- `recommender.py`: investigation retrieval and ranking.
+- `investigations.csv`: catalog used by the app.
+- `scraper.py`: collects investigation records separately from the app.
+- `download_model.py`: downloads the local language model.
+- `models/smollm2/`: downloaded model files.
+
+## Scraper setup
+
+Only needed if you want to collect the metadata again:
+
+```bash
+python -m playwright install chromium
+python scraper.py
 ```
 
-A model-download script and dependency file support setup when included in the repository. Large model files do not need to be committed to Git to run the app locally.
+Check the scraper's output location before replacing the catalog used by the app. Running the scraper is not required to launch the app with an existing catalog.
 
-## Data and attribution
+## What to keep in mind
 
-The application uses investigation metadata attributed to NASA PSI, with links to original investigation pages where available. Fields may include objectives, hypotheses, experimental approaches, reported results, hardware, and research context.
+This is a hackathon prototype, not a validated research tool. AI notes can be wrong. Check them against the metadata and original sources.
 
-- Source records remain distinct from AI-generated interpretation.
-- Some metadata supplied to the model is excerpted to fit its context window.
-- A source link does not mean every generated sentence has been verified against the linked page.
-- CSV and TXT exports are research-discovery artifacts, not experimental training datasets.
+A relevant investigation is not automatically a usable modeling dataset. Mentioned variables are not confirmed data columns, and hypotheses are not findings. The exported brief is a research aid, not experimental data or fire-safety advice.
 
-StarFire is an independent prototype. It is not affiliated with or endorsed by NASA. Source materials and model weights remain subject to their respective terms; their inclusion does not establish a license for this repository.
+The next steps are to evaluate retrieval quality, check generated claims against their sources, and inspect experimental files before making modeling claims.
 
-## Limitations
+## Sources
 
-- Retrieval quality has not been established by a formal evaluation in this prototype.
-- Ranking identifies potentially relevant records; it does not establish scientific relevance with certainty.
-- The local model can produce inaccurate, incomplete, repetitive, or unsupported text despite its grounding instructions.
-- Metadata may be incomplete. Absence from an excerpt is not evidence that a full investigation lacks a measurement or result.
-- A variable mentioned in metadata is not necessarily an available data column.
-- Relevance does not establish that experimental files contain linked inputs and outcomes suitable for modeling.
-- More requested investigations require more sequential generation work. Performance depends on hardware and response length.
-- The interface does not provide operational fire-safety advice, validated safety scores, or verified predictions.
-- Local note generation does not imply that the recommender and all setup steps work fully offline; that depends on their dependencies and cached resources.
+Investigation metadata is attributed to NASA Physical Sciences Informatics (PSI), with original links included where available. The local language model is `HuggingFaceTB/SmolLM2-1.7B-Instruct`.
 
-## Next steps
-
-- Evaluate retrieval on a documented set of research questions.
-- Assess generated claims against their supporting metadata.
-- Improve field-level traceability between generated interpretations and source evidence.
-- Inspect experimental files before making claims about modeling suitability.
-- Gather user feedback on the shortlist and research-brief workflow.
-
-## Project status
-
-Working hackathon prototype. The focus is a clear, inspectable journey from a research question to relevant investigation candidates and a concrete next research step.
-
+StarFire is an independent project, not affiliated with or endorsed by NASA. Source materials and model weights remain subject to their respective terms.
