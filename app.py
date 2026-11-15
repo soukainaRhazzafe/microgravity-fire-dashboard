@@ -139,8 +139,8 @@ def parse_research_note(value):
 def research_note_html(value):
     presentation = {
         "connection": ("sf-connection", "01", "Why this relates to your question"),
-        "useful evidence": ("sf-evidence", "02", "Useful evidence · AI-selected"),
-        "interpretation": ("sf-interpretation", "03", "AI interpretation"),
+        "useful evidence": ("sf-evidence", "02", "Useful evidence"),
+        "interpretation": ("sf-interpretation", "03", "Generated interpretation"),
         "next step": ("sf-next", "04", "Your next research step"),
     }
     cards = []
