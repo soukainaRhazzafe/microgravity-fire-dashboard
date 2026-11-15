@@ -172,12 +172,12 @@ def render_shortlist_map(results):
     st.caption("Listed = text is present in the catalog field. This does not establish findings, data quality, or file availability.")
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def load_recommender():
     return PSIInvestigationRecommender(str(BASE_DIR / "investigations.csv"))
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def load_local_model():
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -341,6 +341,7 @@ if results is not None:
         st.caption(f"{len(results)} ranked investigations · AI-generated notes; check claims against the sources.")
         st.markdown("#### Scan the shortlist")
         render_visual_shortlist(results)
+        
         st.markdown('<div class="sf-section-hint">Choose an investigation above to jump to its note. Start with the connection, then inspect the evidence and next step.</div>', unsafe_allow_html=True)
         export_rows = []
         total = len(results)
