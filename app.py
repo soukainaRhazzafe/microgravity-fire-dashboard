@@ -86,7 +86,7 @@ if st.button("Recommend"):
                 ):
 
                 st.write(
-                    f"**Research Area:** {row['research_area']}"
+                    f"**Research Area:** {row['research_area'].astype(str).str.replace(r"^\s*:\s*", "", regex=True).str.strip()}"
                 )
 
                 st.write(
