@@ -13,6 +13,8 @@ class PSIInvestigationRecommender:
         self.model = SentenceTransformer(
             "all-MiniLM-L6-v2"
         )
+        self.df["research_area"] = (self.df["research_area"].astype(str).str.replace(r"^\s*:\s*","",regex=True).str.strip()
+        )
 
         self.df["search_text"] = (
             self.df["title"].fillna("")
